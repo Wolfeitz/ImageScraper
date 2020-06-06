@@ -22,21 +22,22 @@ namespace ImgScraper
 
             var logPath = System.IO.Path.GetTempFileName();
             var logFile = System.IO.File.Create(logPath);
-            //var logWriter = new System.IO.StreamWriter(logFile);
+            var logWriter = new System.IO.StreamWriter(logFile);
 
             foreach (var item in sheet)
             {
                 //item.thumb =
-                //var webInfo = GetNodesFromSearch(item.Item);   
-                //item.thumb = ParseThumbnail(webInfo);
-                //item.full = GetImageFromDetail(ProdDetailLink(webInfo));
-                //logWriter.WriteLine(item.ToString());
-                Console.WriteLine(string.Format("{0},{1}", item.thumb, item.full));
+                var webInfo = GetSearchHtmlAsync(item.Item);
+                Console.WriteLine(item.Item);
+                item.thumb = ParseThumbnail(webInfo);
+                item.full = GetImageFromDetail(ProdDetailLink(webInfo));
+                logWriter.WriteLine("{0},{1},{2}", item.Item, item.thumb, item.full);
+                //Console.WriteLine(string.Format("{0},{1}", ParseThumbnail(webInfo), GetImageFromDetail(ProdDetailLink(webInfo))));
             }
 
-            
-            
-            //logWriter.Dispose();
+
+            Console.WriteLine(logPath + " - " + logFile);
+            logWriter.Dispose();
 
             //Console.Write();
             //GetSearchHtmlAsync("5590");
@@ -97,9 +98,18 @@ namespace ImgScraper
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
             HtmlNode specificNode = doc.GetElementbyId("main_imagephoto");
-            var img = specificNode.SelectSingleNode("//a[@id='main_image_large']").Attributes["href"].Value;
+            string retVal = "No Image Found";
+            try
+            {
+                retVal = specificNode.SelectSingleNode("//a[@id='main_image_large']").Attributes["href"].Value;
+            }
+            catch (Exception ex)
+            {
+                //nothing here...
+            }
+          
             //Console.Write(img);
-            return img;
+            return retVal;
         }
 
         private static string ParseThumbnail(HtmlNode htmlnode)
